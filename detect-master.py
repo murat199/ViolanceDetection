@@ -8,9 +8,7 @@ import cv2
 import os
 import sys
 import time
-from src.ViolenceDetector import *
-import settings.DeploySettings as deploySettings
-import settings.DataSettings as dataSettings
+import src.ViolenceDetector as ViolenceDetector
 import src.data.ImageUtils as ImageUtils
 import operator
 import random
@@ -21,34 +19,18 @@ from keras.models import load_model
 from PIL import Image
 from io import BytesIO
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 socketio = SocketIO(app)
 
-violenceDetector = ViolenceDetector()
+violenceDetector = ViolenceDetector.ViolenceDetector()
 
 @app.route('/')
 def sessions():
    return render_template('index_webcam.html')
 
-def messageReceived(methods=['GET', 'POST']):
-   print('message was received!!!')
-
-@socketio.on('DetectFrames')
-def handle_my_custom_event(frames, methods=['GET', 'POST']):
-   dataFrames=list()
-   dataJson = json.loads(str(frames).replace('\'','\"'))
-   for item in dataJson['data']:
-      imgdata = base64.b64decode(item)
-      dataFrames.append(imgdata)
-      now = datetime.datetime.now()
-      response={'isDone':'false','message':'Cevap zamani:'+str(now.isoformat())}
-      socketio.emit('DetectFramesResponse', response, callback=messageReceived)
-   print("Eleman sayisi:"+str(len(dataFrames)))
-   now = datetime.datetime.now()
-   response={'isDone':'true','message':'Cevap zamani:'+str(now.isoformat())}
-   socketio.emit('DetectFramesResponse', response, callback=messageReceived)
+def MessageReceived(methods=['GET', 'POST']):
+   print('Message was received!!!')
 
 @socketio.on('Detector')
 def Detector(frames, methods=['GET', 'POST']):
@@ -59,12 +41,12 @@ def Detector(frames, methods=['GET', 'POST']):
       #siddet tespit edildi
       if isFighting:
          response={'isDone':'false','message':'Baslangic:'+str(item['time'])}
-         socketio.emit('Detector', response, callback=messageReceived)
+         socketio.emit('Detector', response, callback=MessageReceived)
       else:
          response={'isDone':'false','message':'Bitis:'+str(item['time'])}
-         socketio.emit('Detector', response, callback=messageReceived)
+         socketio.emit('Detector', response, callback=MessageReceived)
    response={'isDone':'true','message':'tespit bitti'}
-   socketio.emit('Detector', response, callback=messageReceived)
+   socketio.emit('Detector', response, callback=MessageReceived)
 
 def readb64(base64_string):
    cleanData = str(base64_string)[len("data:image/jpeg;base64,"):]
