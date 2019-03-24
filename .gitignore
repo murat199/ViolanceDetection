@@ -124,7 +124,7 @@ dmypy.json
 .pyre/
 
 # ANN
-checkpoints/
+checkpoints/save_epoch_10
 darknet19.pb
 
 # End of
