@@ -32,6 +32,10 @@ def sessions():
 def MessageReceived(methods=['GET', 'POST']):
    print('Message was received!!!')
 
+def AllowedFile(filename):
+   return '.' in filename and \
+      filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @socketio.on('Detector')
 def Detector(frames, methods=['GET', 'POST']):
    dataJson = json.loads(str(frames).replace('\'','\"'))
